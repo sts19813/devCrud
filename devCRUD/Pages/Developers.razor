@@ -1,0 +1,78 @@
+﻿@page "/developer/add"
+@page "/developer/edit/{userId:guid}"
+@using Services
+@inject IDeveloperService personService
+<PageTitle>@Title</PageTitle>
+
+<h3>@Title</h3>
+<a href="/" class="btn btn-outline-dark">Show All</a>
+<div class="row">
+    <div class="col-md-6">
+        <EditForm Model="@person" OnValidSubmit="Save">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="Name">Name</label>
+                <InputText class="form-control" @bind-Value="person.name" />
+                <ValidationMessage For="@(()=>person.name)" />
+            </div>
+
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <InputText class="form-control" @bind-Value="person.correo" />
+                <ValidationMessage For="@(()=>person.correo)" />
+            </div>
+
+            <div class="my-2">
+                @message
+            </div>
+
+            <div class="my-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Guid UserId { get; set; }//guid del dev a editar
+
+    private string message = string.Empty;//mensaje para informar al usuario
+
+    Models.Developer person = new();//objeto del modelo tipo developer
+
+    private string Title = "Agregar Dev";//titulo
+
+    //metodo para guardar o editar, en el servicio esta la logica para distinguir el update y el add(create)
+    private void Save()
+    {
+        message = "espere ...";
+        //se evalua el guardado o actualizado en el servicio de developer, se manda el objeto a agregar o actualizar
+        if (personService.AddUpdate(person))
+        {
+            message = "todo oki";
+            person = new();
+        }
+        else
+        {
+            message = "ha ocurrido un error";
+        }
+    }
+
+    //inicializacion de la pagina
+    protected override void OnInitialized()
+    {
+        //si trae una guid valida es para editar, sino para agregar
+        if (UserId != Guid.Empty)
+        {
+            //si es editar cambiamos el titulo
+            Title = "Actualizar Dev";
+
+            //obtenemos los datos del dev a actualizar por medio de su guid ID
+            person = personService.FindById(UserId);
+        }
+        base.OnInitialized();
+    }
+}
