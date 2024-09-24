@@ -14,6 +14,8 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 
 //se indica que la interfaz y servicio
 builder.Services.AddTransient<IDeveloperService, DeveloperService>();
+builder.Services.AddTransient<IStudentService, StudentService>();
+
 
 var app = builder.Build();
 

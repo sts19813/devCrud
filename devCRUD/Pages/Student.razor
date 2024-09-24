@@ -1,0 +1,75 @@
+﻿@page "/students"
+@using Services
+@using Models.DTOs
+
+@inject IStudentService studentService
+@inject IJSRuntime jsRuntime
+<h3>Students</h3>
+<a href="/student/add" class="btn btn-outline-dark my-2">Add Student</a>
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Courses</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var student in studentsWithCourses)
+                {
+                    <tr>
+                        <td>@student.FullName</td>
+                        <td>
+                            @if (student.Courses.Any())
+                            {
+                                <ul>
+                                    @foreach (var course in student.Courses)
+                                    {
+                                        <li>@course</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <span>No Courses</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    // Listado de estudiantes
+    private List<Models.Student> students = new();
+    private List<StudentWithCourses> studentsWithCourses = new();
+
+
+    // Método para eliminar un estudiante, recibe un objeto Student como parámetro
+    private async Task Delete(Models.Student student)
+    {
+        bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this student?");
+
+        // Validación de confirmación
+        if (confirmed)
+        {
+            // Elimina el estudiante y valida la respuesta del servicio
+            if (studentService.Delete(student.StudentId))
+            {
+                // Se elimina el objeto student de la lista
+                students.Remove(student);
+            }
+        }
+    }
+
+    // Inicialización de la página
+    protected override void OnInitialized()
+    {
+        // Se obtienen todos los estudiantes
+        studentsWithCourses = studentService.GetStudentsWithCourses();
+        base.OnInitialized(); base.OnInitialized();
+    }
+}
